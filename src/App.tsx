@@ -128,7 +128,7 @@ function App() {
             </div>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            Snitzer Jagd KI
+            Snitzeljagd KI
           </h1>
           <p className="text-gray-600 text-lg mb-8">
             Finde die perfekte Position! Mach ein Foto und lass unsere KI
