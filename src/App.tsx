@@ -1,7 +1,23 @@
 import { useState, useRef } from "react";
 import "./App.css";
+import trinnoMascot from "./assets/trinno_mascot_png.png";
 
 type Stage = "initial" | "rating" | "success" | "demand_second" | "final";
+
+const TIMER_START_KEY = "snitzeljagd:startTime";
+
+const getStoredStartTime = () => {
+  const storedValue = localStorage.getItem(TIMER_START_KEY);
+  const parsedValue = storedValue ? Number(storedValue) : Number.NaN;
+
+  if (Number.isFinite(parsedValue)) {
+    return parsedValue;
+  }
+
+  const now = Date.now();
+  localStorage.setItem(TIMER_START_KEY, String(now));
+  return now;
+};
 
 interface RatingResult {
   rating: number;
@@ -12,9 +28,8 @@ function App() {
   const [stage, setStage] = useState<Stage>("initial");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [currentRating, setCurrentRating] = useState<RatingResult | null>(null);
-  const [startTime] = useState(Date.now());
+  const [startTime] = useState(() => getStoredStartTime());
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [coordinates, setCoordinates] = useState<string>("");
   const [showRating, setShowRating] = useState(false);
 
   const getElapsedMinutes = () => (Date.now() - startTime) / 60000;
@@ -53,12 +68,6 @@ function App() {
     };
   };
 
-  const generateCoordinates = (): string => {
-    const lat = (Math.random() * 180 - 90).toFixed(6);
-    const lng = (Math.random() * 360 - 180).toFixed(6);
-    return `${lat}°, ${lng}°`;
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -77,8 +86,6 @@ function App() {
 
         // Determine next stage
         if (rating.rating === 10) {
-          const coords = generateCoordinates();
-          setCoordinates(coords);
           setStage("final");
         } else if (!isFirstTwoMinutes() && uploadedImages.length === 0) {
           setStage("demand_second");
@@ -100,14 +107,6 @@ function App() {
     fileInputRef.current?.click();
   };
 
-  const resetApp = () => {
-    setStage("initial");
-    setUploadedImages([]);
-    setCurrentRating(null);
-    setCoordinates("");
-    setShowRating(false);
-  };
-
   return (
     <main className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-white via-blue-50 to-indigo-50">
       <input
@@ -124,15 +123,18 @@ function App() {
         <div className="w-full max-w-md text-center bounce-in">
           <div className="mb-8">
             <div className="inline-block p-6 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full shadow-lg">
-              <span className="text-5xl">🎯</span>
+              <img
+                src={trinnoMascot}
+                alt="Trinno mascot"
+                className="h-48 w-48 object-contain"
+              />
             </div>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
             Snitzeljagd KI
           </h1>
           <p className="text-gray-600 text-lg mb-8">
-            Finde die perfekte Position! Mach ein Foto und lass unsere KI
-            bewerten.
+            Malt unser Maskottchen und überzeugt die KI.
           </p>
           <button
             onClick={handleCameraCapture}
@@ -236,32 +238,17 @@ function App() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            Du hast es gefunden!
+            Du hast es geschafft!
           </h1>
 
           <div className="bg-gradient-to-r from-indigo-100 to-blue-100 rounded-2xl p-8 mb-8 shadow-lg">
             <p className="text-gray-600 text-sm font-semibold mb-3">
-              🗺️ DIE KOORDINATEN
+              🗺️ DER LETZTE HINWEIS
             </p>
-            <p className="text-3xl font-mono font-bold text-indigo-600 break-all">
-              {coordinates}
+            <p className="text-2xl font-mono font-bold text-indigo-600">
+              Gleiche Lokalität wie letzte Weihnachtsfeier.
             </p>
           </div>
-
-          <p className="text-gray-600 text-lg mb-8">
-            Gratuliere! Du hast das Snitzer Jagd Rätsel gelöst! 🎉
-          </p>
-
-          <button
-            onClick={resetApp}
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition transform hover:scale-105 active:scale-95 shadow-lg text-lg"
-          >
-            🔄 Nochmal spielen
-          </button>
-
-          <p className="text-gray-500 text-xs mt-6">
-            Teile deine Koordinaten mit Freunden! 📲
-          </p>
         </div>
       )}
     </main>
